@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Z.P. Marathi School Borkheda Navi - Result Management System</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#1f2937}
+header{background:#14532d;color:#fff;padding:22px 15px;text-align:center}
+header h1{margin:0;font-size:25px} header p{margin:7px 0 0}
+nav{background:#166534;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:10px}
+nav button{background:#fff;border:0;border-radius:6px;padding:9px 13px;cursor:pointer;font-weight:bold}
+.container{max-width:1100px;margin:22px auto;padding:0 14px}
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 3px 12px #0001;margin-bottom:20px}
+h2{color:#166534;margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}
+label{font-weight:bold;font-size:14px}
+input,select{width:100%;padding:10px;margin-top:5px;border:1px solid #cbd5e1;border-radius:6px}
+.primary,.secondary,.danger{border:0;padding:10px 15px;border-radius:7px;cursor:pointer;font-weight:bold;margin:8px 5px 0 0}
+.primary{background:#166534;color:#fff}.secondary{background:#2563eb;color:#fff}.danger{background:#dc2626;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:15px}
+.stat{background:#ecfdf5;border-left:5px solid #166534;padding:18px;border-radius:8px}
+.stat b{display:block;font-size:27px;color:#166534;margin-top:5px}
+table{width:100%;border-collapse:collapse;margin-top:15px;background:#fff}
+th,td{border:1px solid #cbd5e1;padding:8px;text-align:center}
+th{background:#dcfce7}
+.result-card{border:2px solid #166534;padding:20px;border-radius:10px;margin-top:20px}
+.badge{font-size:20px;font-weight:bold}.pass{color:#15803d}.fail{color:#b91c1c}
+.hidden{display:none!important}
+.small{font-size:13px;color:#64748b}
+footer{text-align:center;padding:20px;color:#64748b}
+@media print{
+ nav,.no-print,footer,.form-card,.dashboard-card,.list-card,.search-card{display:none!important}
+ body{background:#fff}.result-card{display:block!important;box-shadow:none;border:2px solid #111}
+}
+</style>
+</head>
+<body>
+
+<header>
+<h1>जिल्हा परिषद मराठी शाळा, बोरखेडा नवी</h1>
+<p>Student Result Management System</p>
+</header>
+
+<nav class="no-print">
+<button onclick="show('home')">Home</button>
+<button onclick="show('dashboard')">Dashboard</button>
+<button onclick="show('form')">Marks Entry</button>
+<button onclick="show('students')">All Students</button>
+<button onclick="show('search')">Search Result</button>
+</nav>
+
+<div class="container">
+
+<section id="home" class="card">
+<h2>Welcome</h2>
+<p>This website manages student examination results for First Term and Second Term.</p>
+<p><b>School:</b> जिल्हा परिषद मराठी शाळा, बोरखेडा नवी</p>
+<p>Enter student details and both-term marks to calculate the combined result, total marks, percentage, grade and result.</p>
+</section>
+
+<section id="dashboard" class="card dashboard-card hidden">
+<h2>Admin Dashboard</h2>
+<div class="stats">
+<div class="stat">Total Students<b id="totalStudents">0</b></div>
+<div class="stat">Passed Students<b id="passedStudents">0</b></div>
+<div class="stat">Failed Students<b id="failedStudents">0</b></div>
+<div class="stat">Pass Percentage<b id="passPercentage">0%</b></div>
+</div>
+</section>
+
+<section id="form" class="card form-card hidden">
+<h2>Student Marks Entry</h2>
+
+<div class="grid">
+<div><label>Student Name</label><input id="name" placeholder="Enter student name"></div>
+<div><label>Roll Number</label><input id="roll" placeholder="Enter roll number"></div>
+<div><label>Class</label><input id="cls" placeholder="e.g. 7th"></div>
+<div><label>Division</label><input id="div" placeholder="e.g. A"></div>
+<div><label>Birth Date</label><input id="birthdate" type="date"></div>
+</div>
+
+<h3>First Term Marks (Out of 100)</h3>
+<div class="grid">
+<div><label>Marathi</label><input id="m1" type="number" min="0" max="100"></div>
+<div><label>English</label><input id="e1" type="number" min="0" max="100"></div>
+<div><label>Mathematics</label><input id="ma1" type="number" min="0" max="100"></div>
+<div><label>Science</label><input id="s1" type="number" min="0" max="100"></div>
+<div><label>Social Science</label><input id="ss1" type="number" min="0" max="100"></div>
+</div>
+
+<h3>Second Term Marks (Out of 100)</h3>
+<div class="grid">
+<div><label>Marathi</label><input id="m2" type="number" min="0" max="100"></div>
+<div><label>English</label><input id="e2" type="number" min="0" max="100"></div>
+<div><label>Mathematics</label><input id="ma2" type="number" min="0" max="100"></div>
+<div><label>Science</label><input id="s2" type="number" min="0" max="100"></div>
+<div><label>Social Science</label><input id="ss2" type="number" min="0" max="100"></div>
+</div>
+
+<button class="primary" onclick="calculate()">Calculate & Save Result</button>
+<button class="secondary" onclick="clearForm()">Clear</button>
+<div id="result" class="result-card hidden"></div>
+</section>
+
+<section id="students" class="card list-card hidden">
+<h2>All Students List</h2>
+<div class="grid">
+<div><label>Filter by Class</label><select id="classFilter" onchange="renderStudents()"><option value="">All Classes</option></select></div>
+</div>
+<div id="studentTable"></div>
+</section>
+
+<section id="search" class="card search-card hidden">
+<h2>Search Student Result</h2>
+<div class="grid">
+<div><label>Roll Number</label><input id="searchRoll" placeholder="Enter roll number"></div>
+</div>
+<button class="secondary" onclick="searchResult()">Search</button>
+<div id="searchOutput"></div>
+</section>
+
+</div>
+
+<footer>© 2026 जिल्हा परिषद मराठी शाळा, बोरखेडा नवी</footer>
+
+<script>
+const subjects=['Marathi','English','Mathematics','Science','Social Science'];
+
+function getAll(){
+ return JSON.parse(localStorage.getItem('students')||'[]');
+}
+function saveAll(data){
+ localStorage.setItem('students',JSON.stringify(data));
+}
+function show(id){
+ document.querySelectorAll('section').forEach(s=>s.classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+ if(id==='dashboard') updateDashboard();
+ if(id==='students') renderStudents();
+}
+function val(id){return Number(document.getElementById(id).value)}
+function calculate(){
+ const name=document.getElementById('name').value.trim();
+ const roll=document.getElementById('roll').value.trim();
+ const cls=document.getElementById('cls').value.trim();
+ const div=document.getElementById('div').value.trim();
+ const birthdate=document.getElementById('birthdate').value;
+
+ if(!name||!roll||!cls||!birthdate){
+  alert('Please enter Name, Roll Number, Class and Birth Date.'); return;
+ }
+
+ const first=[val('m1'),val('e1'),val('ma1'),val('s1'),val('ss1')];
+ const second=[val('m2'),val('e2'),val('ma2'),val('s2'),val('ss2')];
+
+ if([...first,...second].some(x=>x<0||x>100||isNaN(x))){
+  alert('Please enter valid marks from 0 to 100.'); return;
+ }
+
+ const firstTotal=first.reduce((a,b)=>a+b,0);
+ const secondTotal=second.reduce((a,b)=>a+b,0);
+ const total=firstTotal+secondTotal;
+ const percentage=total/10;
+ const grade=percentage>=90?'A+':percentage>=80?'A':percentage>=70?'B+':percentage>=60?'B':percentage>=50?'C':percentage>=35?'D':'F';
+ const pass=[...first,...second].every(x=>x>=35);
+
+ const data={name,roll,cls,div,birthdate,first,second,firstTotal,secondTotal,total,percentage,grade,result:pass?'PASS':'FAIL'};
+ let all=getAll();
+ all=all.filter(x=>x.roll!==roll);
+ all.push(data);
+ saveAll(all);
+ display(data,'result');
+ updateDashboard();
+}
+
+function display(d,id){
+ const el=document.getElementById(id);
+ el.classList.remove('hidden');
+ el.innerHTML=`
+ <h2>Final Combined Result</h2>
+ <p><b>Name:</b> ${escapeHTML(d.name)} &nbsp; <b>Roll No:</b> ${escapeHTML(d.roll)}</p>
+ <p><b>Class:</b> ${escapeHTML(d.cls)} &nbsp; <b>Division:</b> ${escapeHTML(d.div||'-')}</p>
+ <p><b>Birth Date:</b> ${d.birthdate||'-'}</p>
+ <table>
+ <tr><th>Subject</th><th>First Term</th><th>Second Term</th><th>Combined</th></tr>
+ ${subjects.map((s,i)=>`<tr><td>${s}</td><td>${d.first[i]}</td><td>${d.second[i]}</td><td>${d.first[i]+d.second[i]}</td></tr>`).join('')}
+ <tr><th>Total</th><th>${d.firstTotal} / 500</th><th>${d.secondTotal} / 500</th><th>${d.total} / 1000</th></tr>
+ </table>
+ <p><b>Percentage:</b> ${d.percentage.toFixed(2)}%</p>
+ <p><b>Grade:</b> ${d.grade}</p>
+ <p class="badge ${d.result==='PASS'?'pass':'fail'}">${d.result}</p>
+ <br>
+ <button class="primary no-print" onclick="window.print()">Print Result / Save as PDF</button>
+ `;
+}
+
+function searchResult(){
+ const roll=document.getElementById('searchRoll').value.trim();
+ const d=getAll().find(x=>x.roll===roll);
+ if(!d){
+  document.getElementById('searchOutput').innerHTML='<p>No result found.</p>';
+  return;
+ }
+ display(d,'searchOutput');
+}
+
+function renderStudents(){
+ const all=getAll();
+ const filter=document.getElementById('classFilter').value;
+ const rows=all.filter(d=>!filter||d.cls===filter);
+ const box=document.getElementById('studentTable');
+
+ if(!rows.length){box.innerHTML='<p>No students found.</p>';return}
+
+ box.innerHTML=`<table>
+ <tr><th>Roll No.</th><th>Name</th><th>Class</th><th>Birth Date</th><th>Percentage</th><th>Result</th><th>Action</th></tr>
+ ${rows.map(d=>`<tr>
+ <td>${escapeHTML(d.roll)}</td><td>${escapeHTML(d.name)}</td><td>${escapeHTML(d.cls)}</td>
+ <td>${d.birthdate||'-'}</td><td>${d.percentage.toFixed(2)}%</td><td>${d.result}</td>
+ <td><button class="danger" onclick="deleteStudent('${encodeURIComponent(d.roll)}')">Delete</button></td>
+ </tr>`).join('')}
+ </table>`;
+}
+
+function deleteStudent(encodedRoll){
+ const roll=decodeURIComponent(encodedRoll);
+ if(!confirm('Delete this student result?'))return;
+ saveAll(getAll().filter(d=>d.roll!==roll));
+ renderStudents();
+ updateDashboard();
+}
+
+function updateDashboard(){
+ const all=getAll();
+ const pass=all.filter(d=>d.result==='PASS').length;
+ document.getElementById('totalStudents').textContent=all.length;
+ document.getElementById('passedStudents').textContent=pass;
+ document.getElementById('failedStudents').textContent=all.length-pass;
+ document.getElementById('passPercentage').textContent=all.length?((pass/all.length)*100).toFixed(2)+'%':'0%';
+
+ const sel=document.getElementById('classFilter');
+ const current=sel.value;
+ const classes=[...new Set(all.map(d=>d.cls))].sort();
+ sel.innerHTML='<option value="">All Classes</option>'+classes.map(c=>`<option value="${escapeHTML(c)}">${escapeHTML(c)}</option>`).join('');
+ sel.value=classes.includes(current)?current:'';
+}
+
+function clearForm(){
+ ['name','roll','cls','div','birthdate','m1','e1','ma1','s1','ss1','m2','e2','ma2','s2','ss2'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('result').classList.add('hidden');
+}
+
+function escapeHTML(str){
+ return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+show('home');
+</script>
+</body>
+</html>
